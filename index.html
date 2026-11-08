@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tropical Lanches - Cardápio Digital</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col pb-24">
+
+    <!-- Header / Capa Cliente -->
+    <header class="bg-red-700 text-white shadow-lg sticky top-0 z-40" id="mainHeader">
+        <div class="w-full bg-red-900 overflow-hidden relative border-b-2 border-yellow-400">
+            <img id="headerBannerImg" src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1000&q=80" alt="Tropical Lanches Capa" class="w-full h-36 sm:h-48 object-cover object-center">
+            <div class="absolute bottom-2 right-3 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-lg text-xs text-yellow-400 font-semibold flex items-center gap-1.5 shadow">
+                <i class="fa-solid fa-phone"></i> <span id="headerPhone">(62) 98491-3598</span>
+            </div>
+            <div id="tableBadge" class="hidden absolute top-2 left-2 bg-yellow-400 text-red-950 font-extrabold px-3 py-1.5 rounded-xl text-xs shadow-xl flex items-center gap-2 border-2 border-red-800 animate-bounce">
+                <i class="fa-solid fa-qrcode text-sm"></i>
+                <span>MESA <span id="tableNumber">00</span></span>
+            </div>
+        </div>
+
+        <div class="max-w-4xl mx-auto px-4 py-2 flex items-center justify-between bg-red-950 flex-wrap gap-2">
+            <div class="flex items-center space-x-2 text-xs flex-wrap gap-y-1">
+                <span class="bg-yellow-400 text-red-950 font-bold px-2 py-1 rounded flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-green-600 animate-pulse"></span> Aberto
+                </span>
+                <a id="googleReviewBtn" href="#" target="_blank" class="bg-yellow-500 hover:bg-yellow-400 text-red-950 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5 transition shadow">
+                    <i class="fa-brands fa-google"></i> Avalie-nos
+                </a>
+                <button onclick="callWaiterPrompt()" class="bg-red-600 hover:bg-red-500 text-white font-extrabold px-3 py-1 rounded-lg transition shadow flex items-center gap-1 animate-pulse border border-yellow-400">
+                    🔔 Chamar Garçom
+                </button>
+            </div>
+            
+            <button onclick="openTrackModal()" class="bg-yellow-500 hover:bg-yellow-400 text-red-950 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow transition">
+                <i class="fa-solid fa-truck-fast text-xs"></i>
+                <span>Acompanhar Pedido</span>
+            </button>
+        </div>
+
+        <!-- Categorias -->
+        <div class="bg-red-900/90 backdrop-blur-md border-t border-red-800/40" id="categoriesNav">
+            <div class="max-w-4xl mx-auto flex items-center space-x-2 overflow-x-auto px-4 py-2.5 hide-scrollbar text-xs font-semibold">
+                <button onclick="filterCategory('todos', this)" class="cat-btn active bg-yellow-400 text-red-950 px-4 py-1.5 rounded-full whitespace-nowrap transition shadow">Todos</button>
+                <button onclick="filterCategory('pizzas', this)" class="cat-btn bg-white/10 text-white hover:bg-white/20 px-4 py-1.5 rounded-full whitespace-nowrap transition">🍕 Pizzas</button>
+                <button onclick="filterCategory('sanduiches', this)" class="cat-btn bg-white/10 text-white hover:bg-white/20 px-4 py-1.5 rounded-full whitespace-nowrap transition">🍔 Sanduíches</button>
+                <button onclick="filterCategory('porcoes', this)" class="cat-btn bg-white/10 text-white hover:bg-white/20 px-4 py-1.5 rounded-full whitespace-nowrap transition">🍟 Porções</button>
+                <button onclick="filterCategory('pratos', this)" class="cat-btn bg-white/10 text-white hover:bg-white/20 px-4 py-1.5 rounded-full whitespace-nowrap transition">🍽️ Executivos</button>
+                <button onclick="filterCategory('sucos', this)" class="cat-btn bg-white/10 text-white hover:bg-white/20 px-4 py-1.5 rounded-full whitespace-nowrap transition">🥤 Sucos & Cremes</button>
+                <button onclick="filterCategory('bebidas', this)" class="cat-btn bg-white/10 text-white hover:bg-white/20 px-4 py-1.5 rounded-full whitespace-nowrap transition">🥤 Bebidas</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Barra de Pesquisa -->
+    <div class="max-w-4xl mx-auto w-full px-4 pt-4">
+        <div class="relative">
+            <input type="text" id="searchInput" onkeyup="searchProducts()" placeholder="Buscar pizza, lanche, bebida..." class="w-full bg-white border border-gray-300 rounded-xl pl-10 pr-4 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-red-700">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-gray-400 text-sm"></i>
+        </div>
+    </div>
+
+    <!-- Grid de Produtos -->
+    <main class="max-w-4xl mx-auto w-full px-4 py-4 flex-grow">
+        <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="col-span-full text-center py-12 text-gray-500 font-semibold animate-pulse">Carregando cardápio...</div>
+        </div>
+    </main>
+
+    <!-- Rodapé Fixo do Carrinho -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-2xl z-30 py-3 px-4">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <div>
+                <span class="text-xs text-gray-500 font-medium block">Total do Pedido:</span>
+                <span id="cartTotal" class="text-xl font-extrabold text-red-700">R$ 0,00</span>
+            </div>
+            <button onclick="openCartModal()" class="bg-gradient-to-r from-red-700 to-red-800 hover:from-red-800 hover:to-red-900 text-white font-bold px-6 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow-lg transition transform active:scale-95">
+                <i class="fa-solid fa-cart-shopping"></i> Ver Carrinho (<span id="cartCount">0</span>)
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal do Carrinho -->
+    <div id="cartModal" class="fixed inset-0 bg-black/60 z-50 hidden flex justify-center items-end sm:items-center p-0 sm:p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="bg-red-800 text-white px-5 py-4 flex justify-between items-center">
+                <h3 class="font-bold text-lg text-yellow-400 flex items-center gap-2"><i class="fa-solid fa-bag-shopping"></i> Seu Pedido</h3>
+                <button onclick="closeCartModal()" class="text-gray-300 hover:text-white p-1"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-5 overflow-y-auto flex-grow space-y-5">
+                <div>
+                    <h4 class="font-bold text-gray-700 text-sm mb-3 border-b pb-1">Itens Selecionados</h4>
+                    <div id="cartItemsList" class="space-y-3"></div>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+                    <h4 class="font-bold text-red-800 text-sm"><i class="fa-solid fa-user"></i> Dados do Atendimento</h4>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Nome Completo *</label>
+                        <input type="text" id="custName" placeholder="Ex: Maria Silva" class="w-full text-xs p-2.5 border rounded-lg outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Telefone / WhatsApp *</label>
+                        <input type="tel" id="custPhone" placeholder="(62) 99999-9999" class="w-full text-xs p-2.5 border rounded-lg outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Tipo de Atendimento</label>
+                        <select id="deliveryType" onchange="toggleAddressFields()" class="w-full text-xs p-2.5 border rounded-lg outline-none">
+                            <option value="Entrega em Domicílio">Delivery (Entrega em Domicílio)</option>
+                            <option value="Consumo na Mesa">Atendimento de Mesa</option>
+                            <option value="Retirada no Balcão">Retirada no Balcão</option>
+                        </select>
+                    </div>
+                    <div id="tableSelectGroup" class="hidden">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Número da Mesa *</label>
+                        <input type="number" id="custTable" placeholder="Ex: 05" class="w-full text-xs p-2.5 border rounded-lg outline-none">
+                    </div>
+                    <div id="addressFields" class="space-y-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Endereço e Número *</label>
+                            <input type="text" id="custAddress" placeholder="Rua, Av, Número" class="w-full text-xs p-2.5 border rounded-lg outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Bairro e Referência</label>
+                            <input type="text" id="custRef" placeholder="Ex: Próximo à praça" class="w-full text-xs p-2.5 border rounded-lg outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Forma de Pagamento *</label>
+                        <select id="paymentMethod" onchange="toggleChangeField()" class="w-full text-xs p-2.5 border rounded-lg outline-none">
+                            <option value="PIX">PIX</option>
+                            <option value="Cartão de Débito">Cartão de Débito</option>
+                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                            <option value="Dinheiro">Dinheiro</option>
+                        </select>
+                    </div>
+                    <div id="changeField" class="hidden">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Troco para quanto?</label>
+                        <input type="text" id="changeAmount" placeholder="Ex: Troco para R$ 50,00" class="w-full text-xs p-2.5 border rounded-lg outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Observações</label>
+                        <textarea id="orderObs" placeholder="Ex: Sem cebola..." class="w-full text-xs p-2.5 border rounded-lg outline-none h-16 resize-none"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-100 border-t flex flex-col gap-2">
+                <div class="flex justify-between items-center text-sm font-bold text-gray-800">
+                    <span>Total:</span>
+                    <span id="modalCartTotal" class="text-xl text-red-700">R$ 0,00</span>
+                </div>
+                <button onclick="submitOrder()" class="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg transition">
+                    <i class="fa-brands fa-whatsapp text-xl"></i> Enviar Pedido para Cozinha
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/70 z-50 hidden flex justify-center items-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl">
+            <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto text-3xl"><i class="fa-solid fa-check"></i></div>
+            <h3 class="text-xl font-bold text-gray-800">Pedido Aberto com Sucesso!</h3>
+            <p class="text-xs text-gray-600">Seu pedido foi transmitido para a cozinha em tempo real.</p>
+            <div class="bg-gray-50 p-3 rounded-xl border text-left text-xs space-y-1">
+                <p><strong>Pedido:</strong> <span id="confOrderNum" class="text-red-700 font-bold">#0000</span></p>
+                <p><strong>Mesa/Atendimento:</strong> <span id="confTableInfo" class="font-bold text-blue-700">--</span></p>
+                <p><strong>Total:</strong> <span id="confTotal" class="font-bold text-green-700">R$ 0,00</span></p>
+            </div>
+            <button onclick="closeConfirmAndTrack()" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2.5 rounded-xl text-sm transition">Acompanhar Status</button>
+        </div>
+    </div>
+
+    <!-- Modal Status -->
+    <div id="trackModal" class="fixed inset-0 bg-black/60 z-50 hidden flex justify-center items-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative space-y-5">
+            <button onclick="closeTrackModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-red-700"></i> Status do Pedido em Tempo Real</h3>
+            <div id="trackContent"></div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDT9Rd0fSWkHJ15tFHp3lvpEJFt3ybJR6U",
+            authDomain: "tropical-lanches-d30b6.firebaseapp.com",
+            projectId: "tropical-lanches-d30b6",
+            storageBucket: "tropical-lanches-d30b6.firebasestorage.app",
+            messagingSenderId: "1021231264333",
+            appId: "1:1021231264333:web:d29bca6f754f08644ba204"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        window.db = db;
+        window.firebaseCollection = collection;
+        window.firebaseAddDoc = addDoc;
+        window.firebaseDoc = doc;
+        window.firebaseOnSnapshot = onSnapshot;
+
+        window.initAppFirebase();
+    </script>
+
+    <script>
+        let products = [];
+        let cart = [];
+        let currentOrderTracker = null;
+        let activeTable = null;
+        let adminConfig = { name: "Tropical Lanches", phone: "(62) 98491-3598", googleUrl: "#", logoImg: "" };
+
+        window.initAppFirebase = function() {
+            checkTableQuery();
+            loadProductsData();
+            loadConfigData();
+            loadSavedTracker();
+        };
+
+        function checkTableQuery() {
+            const params = new URLSearchParams(window.location.search);
+            const mesa = params.get('mesa');
+            if (mesa) {
+                activeTable = mesa;
+                document.getElementById('tableBadge').classList.remove('hidden');
+                document.getElementById('tableNumber').innerText = mesa.padStart(2, '0');
+                document.getElementById('deliveryType').value = 'Consumo na Mesa';
+                document.getElementById('custTable').value = mesa;
+                toggleAddressFields();
+            }
+        }
+
+        function loadProductsData() {
+            if (window.db) {
+                try {
+                    window.firebaseOnSnapshot(window.firebaseCollection(window.db, "products"), (snapshot) => {
+                        products = [];
+                        snapshot.forEach(docSnap => products.push({ firebaseId: docSnap.id, ...docSnap.data() }));
+                        renderProducts(products);
+                    }, (error) => {
+                        console.warn("Firestore permission error on products. Falling back to local data:", error.message);
+                        const saved = localStorage.getItem('tropical_products');
+                        products = saved ? JSON.parse(saved) : [];
+                        renderProducts(products);
+                    });
+                } catch(err) {
+                    console.warn("Failed to attach products listener. Using local storage.", err);
+                    const saved = localStorage.getItem('tropical_products');
+                    products = saved ? JSON.parse(saved) : [];
+                    renderProducts(products);
+                }
+            } else {
+                const saved = localStorage.getItem('tropical_products');
+                products = saved ? JSON.parse(saved) : [];
+                renderProducts(products);
+            }
+        }
+
+        function loadConfigData() {
+            if (window.db) {
+                try {
+                    window.firebaseOnSnapshot(window.firebaseDoc(window.db, "settings", "storeConfig"), (docSnap) => {
+                        if (docSnap.exists()) {
+                            adminConfig = docSnap.data();
+                            document.getElementById('headerPhone').innerText = adminConfig.phone || "(62) 98491-3598";
+                            if (adminConfig.logoImg) document.getElementById('headerBannerImg').src = adminConfig.logoImg;
+                            document.getElementById('googleReviewBtn').href = adminConfig.googleUrl || "#";
+                        }
+                    }, (error) => {
+                        console.warn("Firestore permission error on store config:", error.message);
+                    });
+                } catch(err) {
+                    console.warn("Config listener failed:", err);
+                }
+            }
+        }
+
+        function renderProducts(items) {
+            const grid = document.getElementById('productsGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            if (!items.length) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500">Nenhum produto cadastrado.</div>`;
+                return;
+            }
+            items.forEach(product => {
+                let optionsHTML = '';
+                if (product.category === 'pizzas' && product.prices) {
+                    optionsHTML = `
+                        <select id="size-${product.id}" class="w-full bg-gray-50 border rounded-lg p-1.5 text-xs font-semibold mt-2">
+                            <option value="P">Pequena (P) - R$ ${Number(product.prices.P).toFixed(2)}</option>
+                            <option value="M" selected>Média (M) - R$ ${Number(product.prices.M).toFixed(2)}</option>
+                            <option value="G">Grande (G) - R$ ${Number(product.prices.G).toFixed(2)}</option>
+                        </select>`;
+                } else if (product.hasFlavors && product.flavors) {
+                    optionsHTML = `
+                        <select id="flavor-${product.id}" class="w-full bg-gray-50 border rounded-lg p-1.5 text-xs font-semibold mt-2">
+                            ${product.flavors.map(f => `<option value="${f}">${f}</option>`).join('')}
+                        </select>`;
+                }
+                const priceVal = product.price ? Number(product.price) : 0;
+                const priceDisplay = (product.category === 'pizzas' && product.prices) ? `A partir de R$ ${Number(product.prices.P).toFixed(2)}` : `R$ ${priceVal.toFixed(2)}`;
+
+                grid.innerHTML += `
+                    <div class="bg-white rounded-2xl shadow-sm border p-4 flex flex-col justify-between">
+                        <div class="flex gap-3">
+                            <img src="${product.img}" class="w-24 h-24 object-cover rounded-xl" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80'">
+                            <div class="flex-grow">
+                                <h3 class="font-bold text-gray-800 text-sm">${product.name}</h3>
+                                <p class="text-xs text-gray-500 mt-1 line-clamp-2">${product.desc || ''}</p>
+                                <span class="text-sm font-extrabold text-red-700 block mt-2">${priceDisplay}</span>
+                            </div>
+                        </div>
+                        ${optionsHTML}
+                        <button onclick="addToCart(${product.id})" class="w-full mt-3 bg-red-700 hover:bg-red-800 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-2 transition active:scale-95">
+                            <i class="fa-solid fa-plus"></i> Adicionar
+                        </button>
+                    </div>`;
+            });
+        }
+
+        window.filterCategory = function(cat, btnElement) {
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.classList.remove('bg-yellow-400', 'text-red-950', 'shadow');
+                btn.classList.add('bg-white/10', 'text-white');
+            });
+            if(btnElement) {
+                btnElement.classList.remove('bg-white/10', 'text-white');
+                btnElement.classList.add('bg-yellow-400', 'text-red-950', 'shadow');
+            }
+            renderProducts(cat === 'todos' ? products : products.filter(p => p.category === cat));
+        };
+
+        window.searchProducts = function() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            renderProducts(products.filter(p => p.name.toLowerCase().includes(query)));
+        };
+
+        window.addToCart = function(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            let itemPrice = Number(product.price || 0);
+            let itemDetail = '';
+
+            if (product.category === 'pizzas' && product.prices) {
+                const sizeSelect = document.getElementById(`size-${productId}`);
+                const size = sizeSelect ? sizeSelect.value : 'M';
+                itemPrice = Number(product.prices[size]);
+                itemDetail = `Tamanho: ${size}`;
+            } else if (product.hasFlavors) {
+                const flavorSelect = document.getElementById(`flavor-${productId}`);
+                if (flavorSelect) itemDetail = `Sabor: ${flavorSelect.value}`;
+            }
+
+            const cartIndex = cart.findIndex(i => i.id === productId && i.detail === itemDetail);
+            if (cartIndex > -1) cart[cartIndex].qty += 1;
+            else cart.push({ id: productId, name: product.name, price: itemPrice, detail: itemDetail, qty: 1 });
+            updateCartUI();
+        };
+
+        function updateCartUI() {
+            const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const count = cart.reduce((sum, item) => sum + item.qty, 0);
+
+            document.getElementById('cartTotal').innerText = `R$ ${total.toFixed(2)}`;
+            document.getElementById('modalCartTotal').innerText = `R$ ${total.toFixed(2)}`;
+            document.getElementById('cartCount').innerText = count;
+
+            const list = document.getElementById('cartItemsList');
+            if (!list) return;
+            list.innerHTML = cart.length ? '' : '<p class="text-xs text-gray-500 text-center py-4">Carrinho vazio.</p>';
+
+            cart.forEach((item, index) => {
+                list.innerHTML += `
+                    <div class="flex items-center justify-between bg-white p-3 rounded-xl border text-xs">
+                        <div>
+                            <h5 class="font-bold text-gray-800">${item.name}</h5>
+                            ${item.detail ? `<span class="text-[10px] text-gray-500 block">${item.detail}</span>` : ''}
+                            <span class="font-bold text-red-700">R$ ${(item.price * item.qty).toFixed(2)}</span>
+                        </div>
+                        <div class="flex items-center gap-2 bg-gray-100 px-2 py-1 rounded-lg">
+                            <button onclick="changeQty(${index}, -1)" class="w-5 h-5 bg-white rounded font-bold">-</button>
+                            <span class="font-bold">${item.qty}</span>
+                            <button onclick="changeQty(${index}, 1)" class="w-5 h-5 bg-white rounded font-bold">+</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        window.changeQty = function(index, delta) {
+            cart[index].qty += delta;
+            if (cart[index].qty <= 0) cart.splice(index, 1);
+            updateCartUI();
+        };
+
+        window.toggleAddressFields = function() {
+            const type = document.getElementById('deliveryType').value;
+            document.getElementById('tableSelectGroup').classList.toggle('hidden', type !== 'Consumo na Mesa');
+            document.getElementById('addressFields').classList.toggle('hidden', type !== 'Entrega em Domicílio');
+        };
+
+        window.toggleChangeField = function() {
+            document.getElementById('changeField').classList.toggle('hidden', document.getElementById('paymentMethod').value !== 'Dinheiro');
+        };
+
+        window.openCartModal = () => document.getElementById('cartModal').classList.remove('hidden');
+        window.closeCartModal = () => document.getElementById('cartModal').classList.add('hidden');
+
+        window.callWaiterPrompt = async function() {
+            let targetMesa = activeTable || prompt('Informe o número da Mesa:');
+            if (!targetMesa) return;
+            const callData = { id: Date.now(), table: targetMesa, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+            if (window.db) {
+                try {
+                    await window.firebaseAddDoc(window.firebaseCollection(window.db, "waiterCalls"), callData);
+                } catch(e) {
+                    console.warn("Could not save waiter call to Firestore:", e.message);
+                }
+            }
+            alert(`🔔 Garçom chamado para a Mesa ${targetMesa}!`);
+        };
+
+        window.submitOrder = async function() {
+            if (!cart.length) return alert('Seu carrinho está vazio.');
+            const name = document.getElementById('custName').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+            const deliveryType = document.getElementById('deliveryType').value;
+            const tableNum = document.getElementById('custTable').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+            const ref = document.getElementById('custRef').value.trim();
+            const payment = document.getElementById('paymentMethod').value;
+            const change = document.getElementById('changeAmount').value.trim();
+            const obs = document.getElementById('orderObs').value.trim();
+
+            if (!name || !phone) return alert('Preencha seu Nome e Telefone.');
+            if (deliveryType === 'Entrega em Domicílio' && !address) return alert('Preencha o Endereço de Entrega.');
+            if (deliveryType === 'Consumo na Mesa' && !tableNum) return alert('Informe o número da Mesa.');
+
+            const orderNum = Math.floor(1000 + Math.random() * 9000);
+            const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const orderData = { id: orderNum, name, phone, deliveryType, tableNum, address, ref, payment, change, obs, items: [...cart], total, status: 1, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+
+            if (window.db) {
+                try {
+                    const docRef = await window.firebaseAddDoc(window.firebaseCollection(window.db, "orders"), orderData);
+                    orderData.firebaseId = docRef.id;
+                } catch(e) {
+                    console.warn("Could not save order to Firestore:", e.message);
+                }
+            }
+            currentOrderTracker = orderData;
+            localStorage.setItem('tropical_tracker', JSON.stringify(currentOrderTracker));
+
+            document.getElementById('confOrderNum').innerText = `#${orderNum}`;
+            document.getElementById('confTableInfo').innerText = deliveryType === 'Consumo na Mesa' ? `Mesa ${tableNum}` : deliveryType;
+            document.getElementById('confTotal').innerText = `R$ ${total.toFixed(2)}`;
+
+            closeCartModal();
+            document.getElementById('confirmModal').classList.remove('hidden');
+
+            let text = `*--- 🔀 PEDIDO #${orderNum} ---*\n*Cliente:* ${name}\n*Tipo:* ${deliveryType} ${tableNum ? '(Mesa ' + tableNum + ')' : ''}\n\n*ITENS:*\n`;
+            cart.forEach(item => text += `• ${item.qty}x ${item.name} (${item.detail}) = R$ ${(item.price * item.qty).toFixed(2)}\n`);
+            text += `\n*TOTAL:* R$ ${total.toFixed(2)}`;
+            window.open(`https://wa.me/5562984913598?text=${encodeURIComponent(text)}`, '_blank');
+            cart = [];
+            updateCartUI();
+        };
+
+        window.closeConfirmAndTrack = () => { document.getElementById('confirmModal').classList.add('hidden'); openTrackModal(); };
+        window.openTrackModal = () => { document.getElementById('trackModal').classList.remove('hidden'); renderTrackerUI(); };
+        window.closeTrackModal = () => document.getElementById('trackModal').classList.add('hidden');
+
+        function loadSavedTracker() {
+            const saved = localStorage.getItem('tropical_tracker');
+            if (saved) currentOrderTracker = JSON.parse(saved);
+        }
+
+        function renderTrackerUI() {
+            const container = document.getElementById('trackContent');
+            if (!container || !currentOrderTracker) return;
+
+            if (window.db && currentOrderTracker.firebaseId) {
+                try {
+                    window.firebaseOnSnapshot(window.firebaseDoc(window.db, "orders", currentOrderTracker.firebaseId), (docSnap) => {
+                        if (docSnap.exists()) {
+                            currentOrderTracker.status = docSnap.data().status;
+                            localStorage.setItem('tropical_tracker', JSON.stringify(currentOrderTracker));
+                        }
+                    }, (error) => {
+                        console.warn("Permission error tracking order status:", error.message);
+                    });
+                } catch(err) {
+                    console.warn("Tracking snapshot error:", err);
+                }
+            }
+
+            let isDelivery = currentOrderTracker.deliveryType === 'Entrega em Domicílio';
+            let steps = isDelivery 
+                ? [{ title: 'Recebido', icon: 'fa-code-pull-request' }, { title: 'Em Preparo', icon: 'fa-fire-burner' }, { title: 'Motoboy Saiu', icon: 'fa-motorcycle' }, { title: 'Entregue', icon: 'fa-circle-check' }]
+                : [{ title: 'Recebido', icon: 'fa-code-pull-request' }, { title: 'Em Preparo', icon: 'fa-fire-burner' }, { title: 'Entregue na Mesa', icon: 'fa-circle-check' }];
+
+            let stepsHTML = '';
+            steps.forEach((step, idx) => {
+                const isActive = (idx + 1) <= currentOrderTracker.status;
+                stepsHTML += `
+                    <div class="flex items-center gap-3 py-2">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs ${isActive ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-500'}">
+                            <i class="fa-solid ${step.icon}"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xs ${isActive ? 'text-gray-800' : 'text-gray-400'}">${step.title}</h4>
+                        </div>
+                    </div>`;
+            });
+
+            container.innerHTML = `
+                <div class="bg-gray-50 p-3 rounded-xl border text-xs mb-3">
+                    <span>Pedido <strong class="text-red-700">#${currentOrderTracker.id}</strong></span>
+                </div>
+                <div>${stepsHTML}</div>`;
+        }
+    </script>
+</body>
+</html>
